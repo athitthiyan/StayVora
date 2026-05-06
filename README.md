@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏨 StayEase
+# 🏨 StayVora
 
 ### Open-source hotel booking platform — built end-to-end with Angular, deployed live, designed for real-world checkout flows.
 
@@ -19,7 +19,7 @@
 
 ## 📖 About
 
-**StayEase** (deployed as **Stayvora**) is a guest-facing hotel discovery and checkout experience designed around a real production problem: how do you let users browse rooms, hold inventory while they pay, recover abandoned bookings, and confirm a stay — all without a re-architect every quarter?
+**StayVora** (deployed as **Stayvora**) is a guest-facing hotel discovery and checkout experience designed around a real production problem: how do you let users browse rooms, hold inventory while they pay, recover abandoned bookings, and confirm a stay — all without a re-architect every quarter?
 
 This repository is the **booking frontend** of a larger ecosystem. It's built with Angular 17 standalone components and Signals-based state management, ships with Jest unit tests and Playwright end-to-end coverage, and is deployed continuously to Vercel.
 
@@ -48,7 +48,7 @@ This repository is the **booking frontend** of a larger ecosystem. It's built wi
 
 ## 🏗️ Architecture
 
-StayEase Booking is one of several apps in a hotel-platform monorepo. Each component lives on its own branch and is deployed independently.
+StayVora Booking is one of several apps in a hotel-platform monorepo. Each component lives on its own branch and is deployed independently.
 
 ```mermaid
 graph TB
@@ -59,7 +59,7 @@ graph TB
     end
 
     subgraph Frontends["🖥️ Frontend Apps"]
-        Booking["StayEase Booking<br/><i>this repo · Angular 17</i>"]
+        Booking["StayVora Booking<br/><i>this repo · Angular 17</i>"]
         PartnerPortal["Partner Portal<br/><i>branch: 6-partner-portal</i>"]
         InsightBoard["InsightBoard<br/><i>branch: 3-insightboard-admin</i>"]
     end
@@ -119,8 +119,8 @@ graph TB
 
 ```bash
 # Clone
-git clone https://github.com/athitthiyan/stayease-booking-app.git
-cd stayease-booking-app
+git clone https://github.com/athitthiyan/StayVora-booking-app.git
+cd StayVora-booking-app
 
 # Install
 npm install
@@ -237,4 +237,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 Built and maintained by [@athitthiyan](https://github.com/athitthiyan). Developed with the help of [Claude Code](https://claude.com/product/claude-code) for AI-assisted refactors, test generation, and architecture review.
 
-If StayEase has been useful to you, a ⭐ on the repo goes a long way.
+If StayVora has been useful to you, a ⭐ on the repo goes a long way.
