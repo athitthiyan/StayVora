@@ -66,8 +66,8 @@ describe('LandingComponent', () => {
     const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
 
     component.searchCity = 'Bali';
-    component.checkIn = '2026-05-01';
-    component.checkOut = '2026-05-05';
+    component.checkIn = '2030-05-01';
+    component.checkOut = '2030-05-05';
     component.guests = 3;
 
     component.search();
@@ -75,8 +75,8 @@ describe('LandingComponent', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/search'], {
       queryParams: expect.objectContaining({
         city: 'Bali',
-        check_in: '2026-05-01',
-        check_out: '2026-05-05',
+        check_in: '2030-05-01',
+        check_out: '2030-05-05',
         guests: '3',
         adults: '2',
         destination: 'Bali',
