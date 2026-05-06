@@ -119,8 +119,8 @@ graph TB
 
 ```bash
 # Clone
-git clone https://github.com/athitthiyan/StayVora-booking-app.git
-cd StayVora-booking-app
+git clone https://github.com/athitthiyan/StayVora.git
+cd StayVora
 
 # Install
 npm install
