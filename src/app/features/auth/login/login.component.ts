@@ -13,7 +13,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     <div class="auth-page">
       <div class="auth-card">
         <a routerLink="/" class="auth-logo">
-          <span>🏨</span> Stay<span class="accent">Ease</span>
+          Stay<span class="accent">vora</span>
         </a>
 
         <h1 class="auth-title">Welcome back</h1>

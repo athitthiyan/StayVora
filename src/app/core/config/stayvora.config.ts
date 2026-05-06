@@ -10,7 +10,7 @@ export const PORTAL_URLS = {
   prod: {
     apiUrl: 'https://hotel-api-production-447d.up.railway.app',
     apiBaseUrl: 'https://hotel-api-production-447d.up.railway.app',
-    customerPortalUrl: 'https://stayease-booking-app.vercel.app',
+    customerPortalUrl: 'https://stayvora.co.in',
     paymentPortalUrl: 'https://payflow-payment-app.vercel.app',
     adminPortalUrl: 'https://insightboard-admin.vercel.app',
     partnerPortalUrl: 'https://stayease-partner-portal.vercel.app',

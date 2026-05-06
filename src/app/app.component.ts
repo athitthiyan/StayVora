@@ -8,11 +8,12 @@ import { AnalyticsService } from './core/services/analytics.service';
 import { environment } from '../environments/environment';
 
 export function shouldShowMaintenanceMode(hostname: string, config: { maintenanceMode: boolean; maintenanceHosts?: string[] }): boolean {
-  if (config.maintenanceMode) {
-    return true;
+  if (!config.maintenanceMode) {
+    return false;
   }
 
-  return (config.maintenanceHosts || []).includes(hostname.toLowerCase());
+  const maintenanceHosts = config.maintenanceHosts || [];
+  return maintenanceHosts.length === 0 || maintenanceHosts.includes(hostname.toLowerCase());
 }
 
 @Component({

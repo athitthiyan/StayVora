@@ -1,7 +1,7 @@
 {
   "name": "stayvora-booking-app",
   "version": "1.0.0",
-  "description": "StayEase — Premium Hotel Booking Platform",
+  "description": "Stayvora - Premium hotel booking platform",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

@@ -62,7 +62,7 @@ describe('AppComponent', () => {
     expect(element.querySelector('app-footer')).not.toBeNull();
   });
 
-  it('enables maintenance mode only for configured hosts', () => {
+  it('keeps production enabled when maintenanceMode is false', () => {
     expect(
       shouldShowMaintenanceMode('stayease-booking-app.vercel.app', {
         maintenanceMode: false,
@@ -75,8 +75,10 @@ describe('AppComponent', () => {
         maintenanceMode: false,
         maintenanceHosts: ['www.stayvora.co.in'],
       }),
-    ).toBe(true);
+    ).toBe(false);
+  });
 
+  it('enables maintenance mode for every host when no hosts are configured', () => {
     expect(
       shouldShowMaintenanceMode('any-host.example', {
         maintenanceMode: true,
@@ -92,6 +94,13 @@ describe('AppComponent', () => {
         maintenanceHosts: ['www.stayvora.co.in'],
       }),
     ).toBe(true);
+
+    expect(
+      shouldShowMaintenanceMode('stayvora.co.in', {
+        maintenanceMode: true,
+        maintenanceHosts: ['www.stayvora.co.in'],
+      }),
+    ).toBe(false);
   });
 
   it('calls analytics.init() on component initialization', () => {

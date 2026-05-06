@@ -15,7 +15,7 @@ export const environment = {
   stripePublishableKey: STRIPE_TEST_KEY,
   stripeEnabled: false,
   maintenanceMode: false,
-  maintenanceHosts: ['www.stayvora.co.in'],
+  maintenanceHosts: [] as string[],
   gaMeasurementId: '',
   // Sentry DSN for error tracking — set to enable (e.g. 'https://...@sentry.io/...')
   sentryDsn: '',

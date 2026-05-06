@@ -1,4 +1,4 @@
-name: StayEase CI
+name: Stayvora CI
 
 on:
   push:
@@ -47,7 +47,7 @@ jobs:
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: stayease-coverage
+          name: stayvora-coverage
           path: coverage/
           retention-days: 14
 
@@ -75,6 +75,6 @@ jobs:
       - name: Upload build artefact
         uses: actions/upload-artifact@v4
         with:
-          name: stayease-dist
+          name: stayvora-dist
           path: dist/stayvora-booking-app/browser/
           retention-days: 7
