@@ -11,7 +11,7 @@ Open-source hotel booking frontend built with Angular, deployed live, and design
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-**Live App:** [stayvora.co.in](https://stayvora.co.in) | **API:** [hotel-api-production-447d.up.railway.app](https://hotel-api-production-447d.up.railway.app)
+**Live App:** [stayvora.co.in](https://stayvora.co.in) | **API:** [api.stayvora.co.in](https://api.stayvora.co.in)
 
 </div>
 
