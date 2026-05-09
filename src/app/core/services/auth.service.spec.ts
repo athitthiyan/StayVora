@@ -19,6 +19,7 @@ const mockUser: UserResponse = {
   avatar_url: null,
   is_admin: false,
   is_active: true,
+  has_password: true,
   created_at: '2024-01-01T00:00:00Z',
 };
 

@@ -20,6 +20,7 @@ describe('ProfileComponent', () => {
     is_admin: false,
     is_partner: false,
     is_active: true,
+    has_password: true,
   };
 
   const authService = {
