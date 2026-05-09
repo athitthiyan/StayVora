@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../core/services/auth.service';
 import { NavbarComponent } from '../../shared/components/navbar/navbar.component';
-import { OtpChallengeResponse, UserResponse } from '../../core/models/auth.model';
+import { OtpChallengeResponse, SetPasswordRequest, UserResponse } from '../../core/models/auth.model';
 
 type ContactChannel = 'email' | 'phone';
 
@@ -204,7 +204,13 @@ function createOtpState(): OtpUiState {
         </section>
 
         <section class="profile-card">
-          <h2>Change Password</h2>
+          <h2>{{ user()?.has_password ? 'Change Password' : 'Set Password' }}</h2>
+
+          @if (!user()?.has_password) {
+            <p class="sso-hint">
+              Your account uses social sign-in. Add a password so you can also sign in with email&nbsp;&amp;&nbsp;password.
+            </p>
+          }
 
           @if (pwSuccessMsg()) {
             <div class="alert alert--success">{{ pwSuccessMsg() }}</div>
@@ -213,21 +219,38 @@ function createOtpState(): OtpUiState {
             <div class="alert alert--error">{{ pwErrorMsg() }}</div>
           }
 
-          <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
-            <div class="form-group">
-              <label for="current_password">Current password</label>
-              <input id="current_password" type="password" formControlName="current_password" />
-            </div>
-
-            <div class="form-group">
-              <label for="new_password">New password</label>
-              <input id="new_password" type="password" formControlName="new_password" />
-            </div>
-
-            <button type="submit" class="btn btn--primary" [disabled]="changingPw()">
-              @if (changingPw()) { Updating... } @else { Update password }
-            </button>
-          </form>
+          @if (user()?.has_password) {
+            <!-- ── Change Password (has existing password) ── -->
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+              <div class="form-group">
+                <label for="current_password">Current password</label>
+                <input id="current_password" type="password" formControlName="current_password" autocomplete="current-password" />
+              </div>
+              <div class="form-group">
+                <label for="new_password">New password</label>
+                <input id="new_password" type="password" formControlName="new_password" autocomplete="new-password" />
+                <span class="field-hint">Minimum 10 characters</span>
+              </div>
+              <div class="pw-actions">
+                <button type="submit" class="btn btn--primary" [disabled]="changingPw()">
+                  @if (changingPw()) { Updating... } @else { Update password }
+                </button>
+                <a routerLink="/forgot-password" class="forgot-link">Forgot your password?</a>
+              </div>
+            </form>
+          } @else {
+            <!-- ── Set Password (SSO-only account, no password yet) ── -->
+            <form [formGroup]="setPasswordForm" (ngSubmit)="setPassword()" novalidate>
+              <div class="form-group">
+                <label for="set_new_password">New password</label>
+                <input id="set_new_password" type="password" formControlName="new_password" autocomplete="new-password" />
+                <span class="field-hint">Minimum 10 characters</span>
+              </div>
+              <button type="submit" class="btn btn--primary" [disabled]="changingPw()">
+                @if (changingPw()) { Setting password... } @else { Set password }
+              </button>
+            </form>
+          }
         </section>
       </div>
 
@@ -308,6 +331,10 @@ function createOtpState(): OtpUiState {
       color: var(--color-text);
       font-weight: 500;
     }
+    .sso-hint { color: var(--color-text-muted); font-size: 13px; line-height: 1.5; margin: 0; }
+    .pw-actions { display: flex; align-items: center; gap: var(--space-lg); flex-wrap: wrap; }
+    .forgot-link { font-size: 13px; color: var(--color-primary); text-decoration: none; }
+    .forgot-link:hover { text-decoration: underline; }
   `],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -333,6 +360,10 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   passwordForm = this.fb.nonNullable.group({
     current_password: ['', Validators.required],
+    new_password: ['', [Validators.required, Validators.minLength(10)]],
+  });
+
+  setPasswordForm = this.fb.nonNullable.group({
     new_password: ['', [Validators.required, Validators.minLength(10)]],
   });
 
@@ -484,69 +515,16 @@ export class ProfileComponent implements OnInit, OnDestroy {
     });
   }
 
-  private setUser(user: UserResponse): void {
-    this.user.set(user);
-    this.profileForm.patchValue({
-      full_name: user.full_name,
-      email: user.email,
-      phone: user.phone ?? '',
-    }, { emitEvent: false });
-  }
+  setPassword(): void {
+    this.setPasswordForm.markAllAsTouched();
+    if (this.setPasswordForm.invalid || this.changingPw()) return;
 
-  private normalizePhone(value: string): string {
-    return value.trim().replace(/\s+/g, ' ');
-  }
+    this.changingPw.set(true);
+    this.pwSuccessMsg.set('');
+    this.pwErrorMsg.set('');
 
-  private getOtpSignal(channel: ContactChannel) {
-    return channel === 'email' ? this.emailOtp : this.phoneOtp;
-  }
-
-  private getOtpState(channel: ContactChannel): OtpUiState {
-    return this.getOtpSignal(channel)();
-  }
-
-  private patchOtpState(channel: ContactChannel, patch: Partial<OtpUiState>): void {
-    this.getOtpSignal(channel).update(state => ({ ...state, ...patch }));
-  }
-
-  private onContactChanged(channel: ContactChannel): void {
-    this.getOtpSignal(channel).set(createOtpState());
-  }
-
-  private tickCountdown(channel: ContactChannel): void {
-    const state = this.getOtpState(channel);
-    if (state.resendRemainingSeconds <= 0) return;
-    this.patchOtpState(channel, { resendRemainingSeconds: state.resendRemainingSeconds - 1 });
-  }
-
-  private applyChallengeResponse(channel: ContactChannel, response: OtpChallengeResponse): void {
-    this.patchOtpState(channel, {
-      challengeId: response.challenge_id,
-      sent: true,
-      verified: false,
-      otp: '',
-      devCode: response.dev_code ?? '',
-      info: response.message,
-      error: '',
-      resendRemainingSeconds: response.resend_available_in_seconds,
-      blockedMessage: response.blocked_until ? 'OTP requests are temporarily blocked. Please try again later.' : '',
-    });
-  }
-
-  private handleOtpError(channel: ContactChannel, err: HttpErrorResponse): void {
-    const detail = err.error?.detail;
-    const payload = typeof detail === 'object' && detail ? detail : null;
-    this.patchOtpState(channel, {
-      error: payload?.message ?? this.extractErrorMessage(err, 'OTP request failed.'),
-      blockedMessage: payload?.code === 'otp_temporarily_blocked' ? payload.message : '',
-      resendRemainingSeconds: payload?.resend_available_in_seconds ?? this.getOtpState(channel).resendRemainingSeconds,
-    });
-  }
-
-  private extractErrorMessage(err: HttpErrorResponse, fallback: string): string {
-    const detail = err.error?.detail;
-    if (typeof detail === 'string') return detail;
-    if (detail && typeof detail.message === 'string') return detail.message;
-    return fallback;
-  }
-}
+    const payload: SetPasswordRequest = this.setPasswordForm.getRawValue();
+    this.authService.setPassword(payload).subscribe({
+      next: () => {
+        this.pwSuccessMsg.set('Password set successfully. You can now sign in with email & password.');
+        this

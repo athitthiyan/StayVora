@@ -148,6 +148,7 @@ export interface UserResponse {
   is_admin: boolean;
   is_partner?: boolean;
   is_active: boolean;
+  has_password: boolean;
   created_at: string;
 }
 
@@ -184,6 +185,10 @@ export interface ResetPasswordRequest {
 
 export interface ChangePasswordRequest {
   current_password: string;
+  new_password: string;
+}
+
+export interface SetPasswordRequest {
   new_password: string;
 }
 
@@ -236,7 +241,4 @@ export interface OtpChallengeVerifyResponse {
   reset_token?: string;
 }
 
-export interface SocialLoginRequest {
-  provider: 'google' | 'apple' | 'microsoft';
-  id_token: string;
-}
+export interface

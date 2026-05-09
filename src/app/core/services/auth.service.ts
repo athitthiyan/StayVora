@@ -8,6 +8,7 @@ import { environment } from '../../../environments/environment';
 import { loginRequest, consumePendingSession } from '../auth/msal.config';
 import {
   ChangePasswordRequest,
+  SetPasswordRequest,
   ForgotPasswordRequest,
   MessageResponse,
   OtpChallengeResponse,
@@ -194,6 +195,10 @@ export class AuthService {
 
   changePassword(payload: ChangePasswordRequest): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.base}/change-password`, payload);
+  }
+
+  setPassword(payload: SetPasswordRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${this.base}/set-password`, payload);
   }
 
   forgotPassword(payload: ForgotPasswordRequest): Observable<OtpChallengeResponse> {
@@ -407,10 +412,4 @@ interface GoogleTokenClient {
 interface GoogleAccounts {
   oauth2: {
     initTokenClient(config: {
-      client_id: string;
-      scope: string;
-      callback: (response: GoogleTokenResponse) => void;
-    }): GoogleTokenClient;
-    revoke?(token: string, callback: () => void): void;
-  };
-}
+      clie

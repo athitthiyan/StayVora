@@ -6,6 +6,7 @@ export type {
   ForgotPasswordRequest,
   ResetPasswordRequest,
   ChangePasswordRequest,
+  SetPasswordRequest,
   UserProfileUpdate,
   OtpChallengeStartRequest,
   OtpChallengeResponse,
@@ -15,4 +16,4 @@ export type {
   OtpChannel,
   MessageResponse,
   SocialLoginRequest,
-} from './shared.model';
+} f
