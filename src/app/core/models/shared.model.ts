@@ -91,7 +91,7 @@ export interface Room {
   review_count: number;
   image_url?: string;
   gallery_urls?: string;
-  amenities?: string;
+  amenities?: string[];
   location?: string;
   city?: string;
   country?: string;
@@ -241,7 +241,4 @@ export interface OtpChallengeVerifyResponse {
   reset_token?: string;
 }
 
-export interface SocialLoginRequest {
-  provider: 'google' | 'apple' | 'microsoft';
-  id_token: string;
-}
+export interfa

@@ -24,7 +24,7 @@ const mockRoom = (overrides: Partial<Room> = {}): Room => ({
   review_count: 24,
   image_url: 'https://example.com/main.jpg',
   gallery_urls: JSON.stringify(['https://example.com/main.jpg', 'https://example.com/2.jpg']),
-  amenities: JSON.stringify(['WiFi', 'Spa']),
+  amenities: ['WiFi', 'Spa'],
   price: 200,
   max_guests: 3,
   beds: 1,
@@ -797,3 +797,4 @@ describe('RoomDetailComponent', () => {
     expect(component.formError()).toContain('active booking hold');
   });
 });
+                

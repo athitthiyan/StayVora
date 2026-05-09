@@ -15,7 +15,7 @@ const MOCK_ROOM = {
     'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800',
     'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800',
   ]),
-  amenities: JSON.stringify(['WiFi', 'Pool', 'Spa', 'Gym', 'Breakfast']),
+  amenities: ['WiFi', 'Pool', 'Spa', 'Gym', 'Breakfast'],
   location: 'Champs-Elysees',
   city: 'Paris',
   country: 'France',
@@ -891,3 +891,4 @@ test.describe('Phase 2 — Date availability conflict detection', () => {
     await expect(page.getByText(/temporarily held/i)).not.toBeVisible();
   });
 });
+                

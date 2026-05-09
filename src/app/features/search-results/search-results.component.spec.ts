@@ -25,8 +25,8 @@ describe('SearchResultsComponent', () => {
 
   const roomsResponse = {
     rooms: [
-      { id: 1, rating: 4.8, is_featured: true, amenities: JSON.stringify(['WiFi', 'Breakfast']), hotel_name: 'Hotel One' },
-      { id: 2, rating: 4.2, is_featured: false, amenities: JSON.stringify(['Pool']), hotel_name: 'Hotel Two' },
+      { id: 1, rating: 4.8, is_featured: true, amenities: ['WiFi', 'Breakfast'], hotel_name: 'Hotel One' },
+      { id: 2, rating: 4.2, is_featured: false, amenities: ['Pool'], hotel_name: 'Hotel Two' },
     ],
     total: 2,
     page: 1,
@@ -792,3 +792,4 @@ describe('SearchResultsComponent', () => {
     getItemSpy.mockRestore();
   });
 });
+                                
