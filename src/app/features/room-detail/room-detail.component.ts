@@ -12,7 +12,7 @@ import { ActiveBookingService } from '../../core/services/active-booking.service
 import { Booking } from '../../core/models/booking.model';
 import { Room } from '../../core/models/room.model';
 import { TAX_CONFIG } from '../../core/config/stayvora.config';
-import { environment } from '../../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { ReviewsSectionComponent } from '../../shared/components/reviews-section/reviews-section.component';
 import { GuestPickerComponent, GuestSelection } from '../../shared/components/guest-picker/guest-picker.component';
 import { DateRangePickerComponent } from '../../shared/components/date-range-picker/date-range-picker.component';
@@ -662,4 +662,9 @@ export class RoomDetailComponent implements OnInit {
       'Mountain View': '⛰', 'Fireplace': '🔥', 'Balcony': '🏗', 'Private Balcony': '🏗',
       'Room Service': '🛎', 'Breakfast Included': '🍳', 'Parking': '🚗',
     };
-    for (const [k, v] of Object.entries(icons))
+    for (const [k, v] of Object.entries(icons)) {
+      if (amenity.toLowerCase().includes(k.toLowerCase())) return v;
+    }
+    return '✓';
+  }
+}

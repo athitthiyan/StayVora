@@ -216,7 +216,7 @@ function createOtpState(): OtpUiState {
                 placeholder="Min 10 chars, upper + lower + digit"
               />
               <button type="button" class="toggle-pw" (click)="togglePassword()" aria-label="Toggle visibility">
-                {{ showPassword() ? 'Hide' : 'Show' }}
+                {{ showPassword() ? '🙈' : '👁️' }}
               </button>
             </div>
             @if (isFieldInvalid('password')) {
@@ -226,7 +226,14 @@ function createOtpState(): OtpUiState {
 
           <div class="form-group">
             <label for="confirmPassword">Confirm password</label>
-            <input id="confirmPassword" type="password" formControlName="confirmPassword" autocomplete="new-password" />
+            <div class="input-password">
+              <input id="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'"
+                formControlName="confirmPassword" autocomplete="new-password" />
+              <button type="button" class="toggle-pw" (click)="showConfirmPassword.set(!showConfirmPassword())"
+                aria-label="Toggle confirm password visibility">
+                {{ showConfirmPassword() ? '🙈' : '👁️' }}
+              </button>
+            </div>
             @if (isConfirmInvalid()) {
               <span class="field-error">Passwords do not match</span>
             }
@@ -401,6 +408,7 @@ export class SignupComponent implements OnDestroy {
   socialLoading = signal(false);
   errorMsg = signal('');
   showPassword = signal(false);
+  showConfirmPassword = signal(false);
   emailOtp = signal<OtpUiState>(createOtpState());
   phoneOtp = signal<OtpUiState>(createOtpState());
 

@@ -891,4 +891,3 @@ test.describe('Phase 2 — Date availability conflict detection', () => {
     await expect(page.getByText(/temporarily held/i)).not.toBeVisible();
   });
 });
-                

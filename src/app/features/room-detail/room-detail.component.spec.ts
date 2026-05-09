@@ -797,4 +797,3 @@ describe('RoomDetailComponent', () => {
     expect(component.formError()).toContain('active booking hold');
   });
 });
-                

@@ -792,4 +792,3 @@ describe('SearchResultsComponent', () => {
     getItemSpy.mockRestore();
   });
 });
-                                

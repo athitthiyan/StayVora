@@ -14,7 +14,7 @@ import {
 import { BookingFilterService } from '../../core/services/booking-filter.service';
 import { PlatformSyncService } from '../../core/services/platform-sync.service';
 
-type TabKey = 'upcoming' | 'past' | 'cancelled' | 'expired';
+type TabKey = 'upcoming' | 'current' | 'past' | 'cancelled' | 'expired';
 
 @Component({
   selector: 'app-booking-history',
@@ -29,8 +29,14 @@ type TabKey = 'upcoming' | 'past' | 'cancelled' | 'expired';
         <h1 class="bookings-hero__title">My Bookings</h1>
         @if (data()) {
           <div class="bookings-hero__stats">
+            @if (tabCount('current') > 0) {
+              <div class="stat-pill stat-pill--current">
+                <span class="stat-pill__count">{{ tabCount('current') }}</span>
+                <span class="stat-pill__label">Current</span>
+              </div>
+            }
             <div class="stat-pill stat-pill--upcoming">
-              <span class="stat-pill__count">{{ data()!.upcoming }}</span>
+              <span class="stat-pill__count">{{ tabCount('upcoming') }}</span>
               <span class="stat-pill__label">Upcoming</span>
             </div>
             <div class="stat-pill stat-pill--past">
@@ -321,6 +327,7 @@ type TabKey = 'upcoming' | 'past' | 'cancelled' | 'expired';
     .stat-pill:hover { border-color: var(--color-primary); }
     .stat-pill__count { font-size: 1.4rem; font-weight: 700; }
     .stat-pill__label { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; color: var(--color-text-muted); margin-top: 2px; }
+    .stat-pill--current .stat-pill__count { color: #fbbf24; }
     .stat-pill--upcoming .stat-pill__count { color: #4ade80; }
     .stat-pill--past .stat-pill__count { color: #818cf8; }
     .stat-pill--cancelled .stat-pill__count { color: #f87171; }
@@ -770,6 +777,7 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
 
   readonly tabs: { key: TabKey; label: string; icon: string }[] = [
     { key: 'upcoming', label: 'Upcoming', icon: '📅' },
+    { key: 'current', label: 'Current', icon: '🏨' },
     { key: 'past', label: 'Past', icon: '✓' },
     { key: 'cancelled', label: 'Cancelled', icon: '✕' },
     { key: 'expired', label: 'Expired', icon: '⏱' },
@@ -826,7 +834,9 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
       this.busyBookingId.set(null);
     }
 
-    this.bookingService.getMyBookings(this.activeTab(), this.currentPage(), this.pageSize()).subscribe({
+    // 'current' is a frontend-only filter — fetch from 'upcoming' on the API
+    const apiTab = this.activeTab() === 'current' ? 'upcoming' : this.activeTab() as 'upcoming' | 'past' | 'cancelled' | 'expired';
+    this.bookingService.getMyBookings(apiTab, this.currentPage(), this.pageSize()).subscribe({
       next: res => {
         this.data.set(res);
         this.currentPage.set(res.page);
@@ -854,9 +864,10 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
   }
 
   tabCount(tab: TabKey): number {
-    if (tab === 'upcoming') return this.data()?.upcoming ?? 0;
-    if (tab === 'past') return this.data()?.past ?? 0;
-    if (tab === 'expired') return this.data()?.expired ?? 0;
+    if (tab === 'upcoming') return this.bookingFilter.filterUpcoming(this.data()?.bookings ?? []).length;
+    if (tab === 'current')  return this.bookingFilter.filterCurrent(this.data()?.bookings ?? []).length;
+    if (tab === 'past')     return this.data()?.past ?? 0;
+    if (tab === 'expired')  return this.data()?.expired ?? 0;
     return this.data()?.cancelled ?? 0;
   }
 
@@ -908,6 +919,7 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
   emptyIcon(): string {
     const tab = this.activeTab();
     if (tab === 'upcoming') return '🌴';
+    if (tab === 'current')  return '🏨';
     if (tab === 'past') return '📸';
     return '🎉';
   }
@@ -915,6 +927,7 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
   emptyTitle(): string {
     const tab = this.activeTab();
     if (tab === 'upcoming') return 'No upcoming trips';
+    if (tab === 'current')  return 'No active stay right now';
     if (tab === 'past') return 'No past stays yet';
     return 'No cancellations';
   }
@@ -922,6 +935,7 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
   emptySubtitle(): string {
     const tab = this.activeTab();
     if (tab === 'upcoming') return 'Time to plan your next getaway!';
+    if (tab === 'current')  return 'Bookings with today\'s dates will appear here.';
     if (tab === 'past') return 'Your travel memories will appear here.';
     return 'Great — all your bookings are on track!';
   }

@@ -11,6 +11,7 @@ import { Booking } from '../models/booking.model';
 // ── Canonical status enum shared across all apps ─────────────────────
 export enum BookingTab {
   UPCOMING = 'upcoming',
+  CURRENT = 'current',
   PAST = 'past',
   CANCELLED = 'cancelled',
 }
@@ -38,6 +39,7 @@ export interface BookingTabDef<T extends string = string> {
 // ── Tab definitions ──────────────────────────────────────────────────
 export const CUSTOMER_TABS: BookingTabDef<BookingTab>[] = [
   { key: BookingTab.UPCOMING, label: 'Upcoming', icon: '📅' },
+  { key: BookingTab.CURRENT, label: 'Current', icon: '🏨' },
   { key: BookingTab.PAST, label: 'Past', icon: '✓' },
   { key: BookingTab.CANCELLED, label: 'Cancelled', icon: '✕' },
 ];
@@ -80,21 +82,39 @@ export class BookingFilterService {
 
   // ── Core Filter Logic (single source for ALL apps) ────────────────
 
-  /** Customer app: Upcoming = confirmed + not yet checked out */
+  /** Customer app: Upcoming = confirmed/pending + check-in is strictly in the future */
   filterUpcoming(bookings: Booking[]): Booking[] {
-    const now = new Date();
-    return bookings.filter(b =>
-      (b.status === 'confirmed' || b.status === 'pending' || b.status === 'processing') &&
-      new Date(b.check_out) >= now
-    );
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    return bookings.filter(b => {
+      if (b.status !== 'confirmed' && b.status !== 'pending' && b.status !== 'processing') return false;
+      const checkIn = new Date(b.check_in);
+      checkIn.setHours(0, 0, 0, 0);
+      return checkIn > todayStart; // check-in is tomorrow or later
+    });
   }
 
-  /** Customer app: Past = completed or confirmed with past check_out */
+  /** Customer app: Current = confirmed + currently staying today */
+  filterCurrent(bookings: Booking[]): Booking[] {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    return bookings.filter(b => {
+      if (b.status !== 'confirmed') return false;
+      const checkIn = new Date(b.check_in);
+      const checkOut = new Date(b.check_out);
+      return checkIn < todayEnd && checkOut >= todayStart; // today falls within the stay
+    });
+  }
+
+  /** Customer app: Past = completed or confirmed with check_out before today */
   filterPast(bookings: Booking[]): Booking[] {
-    const now = new Date();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
     return bookings.filter(b =>
       b.status === 'completed' ||
-      (b.status === 'confirmed' && new Date(b.check_out) < now)
+      (b.status === 'confirmed' && new Date(b.check_out) < todayStart)
     );
   }
 
@@ -126,6 +146,7 @@ export class BookingFilterService {
   filterByTab(bookings: Booking[], tab: string): Booking[] {
     switch (tab) {
       case 'upcoming': return this.filterUpcoming(bookings);
+      case 'current':  return this.filterCurrent(bookings);
       case 'past':     return this.filterPast(bookings);
       case 'cancelled': return this.filterCancelled(bookings);
       case 'expired':  return this.filterExpired(bookings);
@@ -140,6 +161,7 @@ export class BookingFilterService {
   getCounts(bookings: Booking[]): Record<string, number> {
     return {
       upcoming:  this.filterUpcoming(bookings).length,
+      current:   this.filterCurrent(bookings).length,
       past:      this.filterPast(bookings).length,
       cancelled: this.filterCancelled(bookings).length,
       expired:   this.filterExpired(bookings).length,

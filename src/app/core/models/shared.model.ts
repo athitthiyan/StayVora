@@ -241,4 +241,7 @@ export interface OtpChallengeVerifyResponse {
   reset_token?: string;
 }
 
-export interfa
+export interface SocialLoginRequest {
+  provider: 'google' | 'apple' | 'microsoft';
+  id_token: string;
+}

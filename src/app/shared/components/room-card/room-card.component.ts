@@ -86,7 +86,7 @@ import {
         <!-- Price -->
         <div class="room-card__footer">
           <div class="price">
-            @if (room.original_price) {
+            @if (room.original_price && room.original_price > room.price) {
               <span class="price__original">₹{{ room.original_price | number:'1.0-0' }}</span>
             }
             <span class="price__amount">₹{{ room.price | number:'1.0-0' }}</span>
