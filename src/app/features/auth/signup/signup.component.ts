@@ -215,8 +215,13 @@ function createOtpState(): OtpUiState {
                 autocomplete="new-password"
                 placeholder="Min 10 chars, upper + lower + digit"
               />
-              <button type="button" class="toggle-pw" (click)="togglePassword()" aria-label="Toggle visibility">
-                {{ showPassword() ? '🙈' : '👁️' }}
+              <button type="button" class="toggle-pw" (click)="togglePassword()"
+                [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'">
+                @if (showPassword()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
               </button>
             </div>
             @if (isFieldInvalid('password')) {
@@ -230,8 +235,12 @@ function createOtpState(): OtpUiState {
               <input id="confirmPassword" [type]="showConfirmPassword() ? 'text' : 'password'"
                 formControlName="confirmPassword" autocomplete="new-password" />
               <button type="button" class="toggle-pw" (click)="showConfirmPassword.set(!showConfirmPassword())"
-                aria-label="Toggle confirm password visibility">
-                {{ showConfirmPassword() ? '🙈' : '👁️' }}
+                [attr.aria-label]="showConfirmPassword() ? 'Hide password' : 'Show password'">
+                @if (showConfirmPassword()) {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
               </button>
             </div>
             @if (isConfirmInvalid()) {
@@ -313,17 +322,25 @@ function createOtpState(): OtpUiState {
       box-sizing: border-box;
     }
     .input-password { position: relative; }
-    .input-password input { padding-right: 72px; }
+    .input-password input { padding-right: 46px; }
     .toggle-pw {
       position: absolute;
-      right: 10px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
-      background: transparent;
-      color: var(--color-primary);
-      font-size: 12px;
-      font-weight: 700;
+      background: none;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 4px;
+      width: auto;
+      color: var(--color-text-muted);
+      opacity: 0.6;
+      transition: opacity 0.2s;
     }
+    .toggle-pw:hover { opacity: 1; }
     .otp-panel {
       display: grid;
       gap: 10px;

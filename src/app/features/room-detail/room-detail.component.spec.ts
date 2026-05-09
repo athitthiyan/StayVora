@@ -193,7 +193,7 @@ describe('RoomDetailComponent', () => {
 
   it('updates dates, calculates totals, and navigates to checkout', () => {
     roomService.getRoom.mockReturnValue(
-      of(mockRoom({ gallery_urls: 'invalid-json', amenities: 'invalid-json' }))
+      of(mockRoom({ gallery_urls: 'invalid-json', amenities: 'invalid-json' } as unknown as Partial<Room>))
     );
     const router = TestBed.inject(Router);
     const navigateSpy = jest.spyOn(router, 'navigate').mockResolvedValue(true);
@@ -298,7 +298,7 @@ describe('RoomDetailComponent', () => {
 
   it('returns an empty amenities list when room amenities JSON is invalid', () => {
     roomService.getRoom.mockReturnValue(
-      of(mockRoom({ amenities: 'invalid-json', gallery_urls: '[]' })),
+      of(mockRoom({ amenities: 'invalid-json', gallery_urls: '[]' } as unknown as Partial<Room>)),
     );
 
     const fixture = TestBed.createComponent(RoomDetailComponent);

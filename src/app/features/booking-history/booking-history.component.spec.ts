@@ -745,4 +745,82 @@ describe('BookingHistoryComponent', () => {
 
     expect(component.emptySubtitle()).toBe('Great — all your bookings are on track!');
   });
+
+  // ── Current tab coverage ──────────────────────────────────────────────────
+
+  it('maps the current tab to the upcoming API call', () => {
+    bookingService.getMyBookings.mockReturnValue(of(response));
+
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+    component.setTab('current');
+
+    // 'current' is a front-end-only filter — API should receive 'upcoming'
+    expect(bookingService.getMyBookings).toHaveBeenCalledWith('upcoming', 1, 5);
+  });
+
+  it('shows empty state icon for current tab', () => {
+    bookingService.getMyBookings.mockReturnValue(of({ bookings: [], total_pages: 1, tab: 'upcoming' }));
+
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+    component.ngOnInit();
+    component.setTab('current');
+
+    expect(component.emptyIcon()).toBe('🏨');
+  });
+
+  it('shows empty state title for current tab', () => {
+    bookingService.getMyBookings.mockReturnValue(of({ bookings: [], total_pages: 1, tab: 'upcoming' }));
+
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+    component.ngOnInit();
+    component.setTab('current');
+
+    expect(component.emptyTitle()).toBe('No active stay right now');
+  });
+
+  it('shows empty state subtitle for current tab', () => {
+    bookingService.getMyBookings.mockReturnValue(of({ bookings: [], total_pages: 1, tab: 'upcoming' }));
+
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+    component.ngOnInit();
+    component.setTab('current');
+
+    expect(component.emptySubtitle()).toBe("Bookings with today's dates will appear here.");
+  });
+
+  it('tabCount for current tab uses filterCurrent on loaded bookings', () => {
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+
+    // response has no current-stay bookings (all in far past or far future)
+    component.data.set(response);
+    expect(component.tabCount('current')).toBe(0);
+  });
+
+  it('filteredBookings for current tab returns only in-progress stays', () => {
+    const tomorrow = new Date(Date.now() + 86_400_000).toISOString().split('T')[0];
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().split('T')[0];
+
+    const currentResponse = bookingResponse({
+      tab: 'upcoming',
+      bookings: [
+        { ...response.bookings[0], id: 100, status: 'confirmed', check_in: yesterday, check_out: tomorrow },
+        response.bookings[0],
+      ],
+    });
+    bookingService.getMyBookings.mockReturnValue(of(currentResponse));
+
+    const fixture = TestBed.createComponent(BookingHistoryComponent);
+    const component = fixture.componentInstance;
+    component.setTab('current');
+
+    // Only the booking spanning today should appear
+    const ids = component.filteredBookings().map(b => b.id);
+    expect(ids).toContain(100);
+    expect(ids).not.toContain(1);
+  });
 });

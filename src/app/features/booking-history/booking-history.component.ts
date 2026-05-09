@@ -857,16 +857,37 @@ export class BookingHistoryComponent implements OnInit, OnDestroy {
 
   filteredBookings(): Booking[] {
     const bookings = this.data()?.bookings ?? [];
+    const currentStayIds = new Set(
+      this.bookingFilter.filterCurrent(bookings).map(b => b.id)
+    );
+
     if (this.data()?.tab === this.activeTab()) {
+      // API already filtered by tab — but still strip current stays from past
+      if (this.activeTab() === 'past') {
+        return bookings.filter(b => !currentStayIds.has(b.id));
+      }
       return bookings;
     }
-    return this.bookingFilter.filterByTab(bookings, this.activeTab());
+
+    const filtered = this.bookingFilter.filterByTab(bookings, this.activeTab());
+    // Ensure past tab never shows a booking that belongs in current
+    if (this.activeTab() === 'past') {
+      return filtered.filter(b => !currentStayIds.has(b.id));
+    }
+    return filtered;
   }
 
   tabCount(tab: TabKey): number {
-    if (tab === 'upcoming') return this.bookingFilter.filterUpcoming(this.data()?.bookings ?? []).length;
-    if (tab === 'current')  return this.bookingFilter.filterCurrent(this.data()?.bookings ?? []).length;
-    if (tab === 'past')     return this.data()?.past ?? 0;
+    const bookings = this.data()?.bookings ?? [];
+    if (tab === 'upcoming') return this.bookingFilter.filterUpcoming(bookings).length;
+    if (tab === 'current')  return this.bookingFilter.filterCurrent(bookings).length;
+    if (tab === 'past') {
+      // Subtract any bookings that are currently active so they don't double-count
+      const currentIds = new Set(this.bookingFilter.filterCurrent(bookings).map(b => b.id));
+      const apiPast = this.data()?.past ?? 0;
+      const currentInPast = bookings.filter(b => currentIds.has(b.id)).length;
+      return Math.max(0, apiPast - currentInPast);
+    }
     if (tab === 'expired')  return this.data()?.expired ?? 0;
     return this.data()?.cancelled ?? 0;
   }

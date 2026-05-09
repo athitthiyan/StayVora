@@ -29,7 +29,7 @@ const mockRoom = (overrides: Partial<Room> = {}): Room => ({
   original_price: 580,
   image_url: 'https://example.com/room.jpg',
   gallery_urls: '[]',
-  amenities: '[]',
+  amenities: [],
   availability: true,
   rating: 4.9,
   review_count: 120,

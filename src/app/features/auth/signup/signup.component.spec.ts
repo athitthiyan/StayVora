@@ -259,6 +259,17 @@ describe('SignupComponent', () => {
     expect(component.showPassword()).toBe(false);
   });
 
+  it('showConfirmPassword toggles confirm password visibility', () => {
+    const fixture = TestBed.createComponent(SignupComponent);
+    const component = fixture.componentInstance;
+
+    expect(component.showConfirmPassword()).toBe(false);
+    component.showConfirmPassword.set(true);
+    expect(component.showConfirmPassword()).toBe(true);
+    component.showConfirmPassword.set(false);
+    expect(component.showConfirmPassword()).toBe(false);
+  });
+
   it('isFieldInvalid returns false for valid untouched field', () => {
     const fixture = TestBed.createComponent(SignupComponent);
     const component = fixture.componentInstance;
