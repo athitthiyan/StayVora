@@ -16,4 +16,4 @@ export type {
   OtpChannel,
   MessageResponse,
   SocialLoginRequest,
-} f
+} from './shared.model';

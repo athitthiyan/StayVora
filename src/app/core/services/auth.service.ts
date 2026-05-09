@@ -412,4 +412,10 @@ interface GoogleTokenClient {
 interface GoogleAccounts {
   oauth2: {
     initTokenClient(config: {
-      clie
+      client_id: string;
+      scope: string;
+      callback: (response: GoogleTokenResponse) => void;
+    }): GoogleTokenClient;
+    revoke?(token: string, callback: () => void): void;
+  };
+}

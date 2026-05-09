@@ -527,4 +527,81 @@ export class ProfileComponent implements OnInit, OnDestroy {
     this.authService.setPassword(payload).subscribe({
       next: () => {
         this.pwSuccessMsg.set('Password set successfully. You can now sign in with email & password.');
-        this
+        this.setPasswordForm.reset();
+        this.changingPw.set(false);
+        // Refresh user so has_password flips to true and the form switches to Change Password
+        this.authService.getMe().subscribe(user => this.setUser(user));
+      },
+      error: (err: HttpErrorResponse) => {
+        this.pwErrorMsg.set(this.extractErrorMessage(err, 'Failed to set password.'));
+        this.changingPw.set(false);
+      },
+    });
+  }
+
+  private setUser(user: UserResponse): void {
+    this.user.set(user);
+    this.profileForm.patchValue({
+      full_name: user.full_name,
+      email: user.email,
+      phone: user.phone ?? '',
+    }, { emitEvent: false });
+  }
+
+  private normalizePhone(value: string): string {
+    return value.trim().replace(/\s+/g, ' ');
+  }
+
+  private getOtpSignal(channel: ContactChannel) {
+    return channel === 'email' ? this.emailOtp : this.phoneOtp;
+  }
+
+  private getOtpState(channel: ContactChannel): OtpUiState {
+    return this.getOtpSignal(channel)();
+  }
+
+  private patchOtpState(channel: ContactChannel, patch: Partial<OtpUiState>): void {
+    this.getOtpSignal(channel).update(state => ({ ...state, ...patch }));
+  }
+
+  private onContactChanged(channel: ContactChannel): void {
+    this.getOtpSignal(channel).set(createOtpState());
+  }
+
+  private tickCountdown(channel: ContactChannel): void {
+    const state = this.getOtpState(channel);
+    if (state.resendRemainingSeconds <= 0) return;
+    this.patchOtpState(channel, { resendRemainingSeconds: state.resendRemainingSeconds - 1 });
+  }
+
+  private applyChallengeResponse(channel: ContactChannel, response: OtpChallengeResponse): void {
+    this.patchOtpState(channel, {
+      challengeId: response.challenge_id,
+      sent: true,
+      verified: false,
+      otp: '',
+      devCode: response.dev_code ?? '',
+      info: response.message,
+      error: '',
+      resendRemainingSeconds: response.resend_available_in_seconds,
+      blockedMessage: response.blocked_until ? 'OTP requests are temporarily blocked. Please try again later.' : '',
+    });
+  }
+
+  private handleOtpError(channel: ContactChannel, err: HttpErrorResponse): void {
+    const detail = err.error?.detail;
+    const payload = typeof detail === 'object' && detail ? detail : null;
+    this.patchOtpState(channel, {
+      error: payload?.message ?? this.extractErrorMessage(err, 'OTP request failed.'),
+      blockedMessage: payload?.code === 'otp_temporarily_blocked' ? payload.message : '',
+      resendRemainingSeconds: payload?.resend_available_in_seconds ?? this.getOtpState(channel).resendRemainingSeconds,
+    });
+  }
+
+  private extractErrorMessage(err: HttpErrorResponse, fallback: string): string {
+    const detail = err.error?.detail;
+    if (typeof detail === 'string') return detail;
+    if (detail && typeof detail.message === 'string') return detail.message;
+    return fallback;
+  }
+}
