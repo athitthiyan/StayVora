@@ -12,7 +12,6 @@ import { ActiveBookingService } from '../../core/services/active-booking.service
 import { Booking } from '../../core/models/booking.model';
 import { Room } from '../../core/models/room.model';
 import { TAX_CONFIG } from '../../core/config/stayvora.config';
-import { environment } from '../../../environments/environment';
 import { ReviewsSectionComponent } from '../../shared/components/reviews-section/reviews-section.component';
 import { GuestPickerComponent, GuestSelection } from '../../shared/components/guest-picker/guest-picker.component';
 import { DateRangePickerComponent } from '../../shared/components/date-range-picker/date-range-picker.component';
