@@ -23,5 +23,5 @@ export const environment = {
   gaMeasurementId: '',
   // Sentry DSN for error tracking — set to enable (e.g. 'https://...@sentry.io/...')
   sentryDsn: '',
-  // apiUrl: 'https://api.stayvora.co.in',  // point to prod API
+  apiUrl: 'https://api.stayvora.co.in',  // point to prod API
 };

@@ -677,7 +677,7 @@ describe('RoomDetailComponent', () => {
     expect(component.coordinatesMapUrl()).toBeNull();
   });
 
-  it('builds a valid embed URL from coordinates (Google Maps if API key set, else OpenStreetMap)', () => {
+  it('builds an OpenStreetMap embed URL from coordinates', () => {
     roomService.getRoom.mockReturnValue(of(mockRoom({ latitude: 35.5, longitude: 139.7 })));
 
     const fixture = TestBed.createComponent(RoomDetailComponent);
@@ -688,13 +688,10 @@ describe('RoomDetailComponent', () => {
     expect(url).toBeTruthy();
     const raw = (url as { changingThisBreaksApplicationSecurity?: string })
       ?.changingThisBreaksApplicationSecurity ?? String(url);
-    // Must embed the coordinates regardless of provider
+    // Must use OpenStreetMap — no API key, no domain restrictions, works on all environments
+    expect(raw).toContain('openstreetmap.org');
     expect(raw).toContain('35.5');
     expect(raw).toContain('139.7');
-    // Must use Google Maps (when API key present) or OpenStreetMap (fallback) — never the deprecated maps.google.com/maps?output=embed
-    const isGoogleEmbed = raw.includes('google.com/maps/embed');
-    const isOpenStreetMap = raw.includes('openstreetmap.org');
-    expect(isGoogleEmbed || isOpenStreetMap).toBe(true);
   });
 
   it('hides strikethrough and savings when original_price is not greater than price', () => {

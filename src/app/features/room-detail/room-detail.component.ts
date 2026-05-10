@@ -419,14 +419,9 @@ export class RoomDetailComponent implements OnInit {
     const lat = this.room()?.latitude;
     const lng = this.room()?.longitude;
     if (!lat || !lng) return null;
-    const key = environment.googleMapsApiKey || '';
-    const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
-    // Use Google Maps Embed API only in production — the API key is restricted to the
-    // production domain (www.stayvora.co.in) in Google Cloud Console, so localhost
-    // always falls back to the referrer-free OpenStreetMap embed.
-    const url = (key && environment.production)
-      ? `https://www.google.com/maps/embed/v1/view?key=${key}&center=${lat},${lng}&zoom=15`
-      : osmUrl;
+    // Always use OpenStreetMap — free, no API key, no domain restrictions.
+    // Works identically on localhost and production without any Google Cloud setup.
+    const url = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
 
