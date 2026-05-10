@@ -219,14 +219,14 @@ function getBusinessDate(): Date {
           <aside class="booking-panel">
             <div class="booking-panel__card">
               <div class="booking-panel__price">
-                @if (room()!.original_price) {
+                @if (room()!.original_price && room()!.original_price! > room()!.price) {
                   <span class="price__original">₹{{ room()!.original_price | number:'1.0-0' }}</span>
                 }
                 <span class="price__amount">₹{{ room()!.price | number:'1.0-0' }}</span>
                 <span class="price__period">/ night</span>
               </div>
 
-              @if (room()!.original_price) {
+              @if (room()!.original_price && room()!.original_price! > room()!.price) {
                 <div class="booking-panel__savings">
                   You save ₹{{ (room()!.original_price! - room()!.price) | number:'1.0-0' }} per night!
                 </div>
@@ -388,11 +388,25 @@ export class RoomDetailComponent implements OnInit {
   }
 
   amenities = computed<string[]>(() => {
-      const a = this.room()?.amenities;
-      if (!a) return [];
-      if (Array.isArray(a)) return a;
-      // Fallback: handle legacy JSON string from old data
-      try { return JSON.parse(a as unknown as string); } catch { return []; }
+      const raw = this.room()?.amenities;
+      if (!raw) return [];
+      let a: unknown = raw;
+      // Unwrap up to 2 levels of JSON string encoding (handles single- and double-encoded)
+      for (let i = 0; i < 2; i++) {
+        if (typeof a !== 'string') break;
+        try { a = JSON.parse(a as string); } catch { return []; /* truly invalid */ }
+        if (Array.isArray(a)) break;
+      }
+      // Handle double-encoded via array: API returned ["[\"WiFi\",...\"]"]
+      // (1-element array whose sole item is a JSON array string)
+      if (Array.isArray(a) && a.length === 1 && typeof a[0] === 'string') {
+        const elem = (a[0] as string).trim();
+        if (elem.startsWith('[')) {
+          try { a = JSON.parse(elem); } catch { /* keep original */ }
+        }
+      }
+      if (Array.isArray(a)) return a as string[];
+      return [];
     });
 
   safeMapUrl = computed<SafeResourceUrl | null>(() => {
@@ -406,9 +420,13 @@ export class RoomDetailComponent implements OnInit {
     const lng = this.room()?.longitude;
     if (!lat || !lng) return null;
     const key = environment.googleMapsApiKey || '';
-    const url = key
+    const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01},${lat - 0.01},${lng + 0.01},${lat + 0.01}&layer=mapnik&marker=${lat},${lng}`;
+    // Use Google Maps Embed API only in production — the API key is restricted to the
+    // production domain (www.stayvora.co.in) in Google Cloud Console, so localhost
+    // always falls back to the referrer-free OpenStreetMap embed.
+    const url = (key && environment.production)
       ? `https://www.google.com/maps/embed/v1/view?key=${key}&center=${lat},${lng}&zoom=15`
-      : `https://maps.google.com/maps?q=${lat},${lng}&output=embed`;
+      : osmUrl;
     return this.sanitizer.bypassSecurityTrustResourceUrl(url);
   });
 
@@ -656,15 +674,45 @@ export class RoomDetailComponent implements OnInit {
 
   getAmenityIcon(amenity: string): string {
     const icons: Record<string, string> = {
-      'WiFi': '📶', 'Pool': '🏊', 'Infinity Pool': '🏊', 'Spa': '💆', 'Jacuzzi': '🛁',
-      'Gym': '🏋️', 'Gym Access': '🏋️', 'King Bed': '🛏', 'Butler Service': '🤵',
-      'Minibar': '🍷', 'Smart TV': '📺', 'City View': '🌆', 'Ocean View': '🌊',
-      'Mountain View': '⛰', 'Fireplace': '🔥', 'Balcony': '🏗', 'Private Balcony': '🏗',
-      'Room Service': '🛎', 'Breakfast Included': '🍳', 'Parking': '🚗',
+      'WiFi': '📶', 'Free WiFi': '📶', 'High-Speed WiFi': '📶',
+      'Pool': '🏊', 'Infinity Pool': '🏊', 'Private Pool': '🏊',
+      'Spa': '💆', 'Spa Access': '💆',
+      'Jacuzzi': '🛁', 'Bathtub': '🛁', 'Soaking Tub': '🛁', 'Hot Tub': '🛁',
+      'Gym': '🏋️', 'Gym Access': '🏋️',
+      'King Bed': '🛏', 'Tatami Floor': '🛏',
+      'Butler Service': '🤳',
+      'Minibar': '🍷', 'Mini Bar': '🍷',
+      'TV': '📺', 'Smart TV': '📺',
+      'City View': '🌆', 'Ocean View': '🌊', 'Sea View': '🌊',
+      'Mountain View': '⛰️', 'Desert View': '🏜️', 'Zen Garden View': '🌸',
+      'Fireplace': '🔥',
+      'Balcony': '🏗️', 'Private Balcony': '🏗️', 'Private Terrace': '🏗️',
+      'Room Service': '🛎',
+      'Breakfast': '🍳', 'Breakfast Included': '🍳', 'Breakfast included': '🍳',
+      'Coffee Maker': '☕',
+      'Parking': '🅿️',
+      'Air Conditioning': '❄️', 'Heating': '🔆',
+      'Kitchen': '🍽️', 'Kitchenette': '🍽️',
+      'Laundry': '👕',
+      'Elevator': '🛗',
+      'Concierge': '🏨',
+      'Airport Transfer': '✈️', 'Airport transfer': '✈️',
+      'Pet Friendly': '🐾',
+      'Non-smoking': '🚭',
+      'Accessible': '♿',
+      'Garden View': '🌿', 'Lake View': '🏞️',
+      'Safe': '🔒',
+      'Refrigerator': '🧊',
+      'Microwave': '♨️',
+      'Shower': '🚿',
+      'Hair Dryer': '💨',
+      'Iron': '👔',
+      'Desk': '📝', 'Work Desk': '📝',
+      'Beach access': '🏖️', 'Beach Access': '🏖️',
+      'Camel Ride': '🐪',
+      'Ski-in/Ski-out': '⛷️',
+      'Yukata Robes': '👘',
     };
-    for (const [k, v] of Object.entries(icons)) {
-      if (amenity.toLowerCase().includes(k.toLowerCase())) return v;
-    }
-    return '✓';
+    return icons[amenity] ?? '✓';
   }
 }

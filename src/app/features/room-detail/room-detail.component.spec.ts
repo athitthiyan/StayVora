@@ -308,6 +308,22 @@ describe('RoomDetailComponent', () => {
     expect(component.amenities()).toEqual([]);
   });
 
+  it('unpacks double-encoded amenities (1-element array wrapping a JSON string)', () => {
+    // Scenario: production DB has amenities stored as a double-encoded JSON string.
+    // The API validator wraps the inner string in an array: ["[\"WiFi\",\"Breakfast\"]"].
+    // The component must recognise this pattern and return the actual amenity list.
+    const doubleEncoded = [JSON.stringify(['WiFi', 'Breakfast', 'Pool'])];
+    roomService.getRoom.mockReturnValue(
+      of(mockRoom({ amenities: doubleEncoded as unknown as string[] })),
+    );
+
+    const fixture = TestBed.createComponent(RoomDetailComponent);
+    const component = fixture.componentInstance;
+    component.ngOnInit();
+
+    expect(component.amenities()).toEqual(['WiFi', 'Breakfast', 'Pool']);
+  });
+
   it('returns empty amenities and gallery lists when optional JSON fields are missing', () => {
     roomService.getRoom.mockReturnValue(
       of(mockRoom({ amenities: undefined, gallery_urls: undefined, image_url: '' })),
@@ -661,14 +677,44 @@ describe('RoomDetailComponent', () => {
     expect(component.coordinatesMapUrl()).toBeNull();
   });
 
-  it('builds coordinatesMapUrl when latitude and longitude are present', () => {
+  it('builds a valid embed URL from coordinates (Google Maps if API key set, else OpenStreetMap)', () => {
     roomService.getRoom.mockReturnValue(of(mockRoom({ latitude: 35.5, longitude: 139.7 })));
 
     const fixture = TestBed.createComponent(RoomDetailComponent);
     const component = fixture.componentInstance;
     component.ngOnInit();
 
-    expect(component.coordinatesMapUrl()).toBeTruthy();
+    const url = component.coordinatesMapUrl();
+    expect(url).toBeTruthy();
+    const raw = (url as { changingThisBreaksApplicationSecurity?: string })
+      ?.changingThisBreaksApplicationSecurity ?? String(url);
+    // Must embed the coordinates regardless of provider
+    expect(raw).toContain('35.5');
+    expect(raw).toContain('139.7');
+    // Must use Google Maps (when API key present) or OpenStreetMap (fallback) — never the deprecated maps.google.com/maps?output=embed
+    const isGoogleEmbed = raw.includes('google.com/maps/embed');
+    const isOpenStreetMap = raw.includes('openstreetmap.org');
+    expect(isGoogleEmbed || isOpenStreetMap).toBe(true);
+  });
+
+  it('hides strikethrough and savings when original_price is not greater than price', () => {
+    // original_price(4200) < price(4500) — should NOT show discount
+    roomService.getRoom.mockReturnValue(of(mockRoom({ price: 4500, original_price: 4200 })));
+    const fixture = TestBed.createComponent(RoomDetailComponent);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.price__original')).toBeNull();
+    expect(el.querySelector('.booking-panel__savings')).toBeNull();
+  });
+
+  it('shows strikethrough and savings when original_price is greater than price', () => {
+    // original_price(5000) > price(4500) — should show discount
+    roomService.getRoom.mockReturnValue(of(mockRoom({ price: 4500, original_price: 5000 })));
+    const fixture = TestBed.createComponent(RoomDetailComponent);
+    fixture.detectChanges();
+    const el: HTMLElement = fixture.nativeElement;
+    expect(el.querySelector('.price__original')).not.toBeNull();
+    expect(el.querySelector('.booking-panel__savings')?.textContent).toContain('500');
   });
 
   it('does nothing when retryLiveAvailability is called without a loaded room', () => {
@@ -751,6 +797,7 @@ describe('RoomDetailComponent', () => {
     expect(component.formError()).toBe('');
   });
 
+
   it('shows error when getBooking fails while checking different room active hold', async () => {
     TestBed.resetTestingModule();
     const mockActiveBookingSvc = {
@@ -794,6 +841,7 @@ describe('RoomDetailComponent', () => {
 
     component.bookNow();
 
+    // When getBooking throws, the component falls back to the active-hold blocking message
     expect(component.formError()).toContain('active booking hold');
   });
 });
