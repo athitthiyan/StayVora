@@ -27,6 +27,8 @@
     "@azure/msal-browser": "^5.6.3",
     "@sentry/angular": "^8.0.0",
     "@stripe/stripe-js": "^4.0.0",
+    "@typescript-eslint/types": "^8.59.2",
+    "@typescript-eslint/typescript-estree": "^8.59.2",
     "leaflet": "^1.9.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
